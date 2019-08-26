@@ -1,0 +1,8 @@
+.grid-wrapper {
+  display: grid;
+  grid-template-columns: auto auto;
+
+  & > * {
+    background-color: #B8B8B8;
+  }
+}
