@@ -43,33 +43,83 @@ function requestFastaFromUniprot(form) {
     .then(response => response.text())
     .then(txt => {
       txt = txt.replace(/^>.*/, '').replace(/[^a-z]/gi, '');
-      document.querySelector('#js-peptide-sequence').value = txt;
-      calculate(txt);
+      main(txt);
   });
 };
 
+function main(sequence) {
+  document.querySelector('#js-peptide-sequence').value = sequence;
+  let peptide = calculate(sequence);
+
+  displayResult(peptide);
+};
+
 function calculate(sequence) {
-  let avgMass = 0;
-  let monoMass = 0;
-  let molarExt = 0;
-  let mgmlExt = 0;
-  for (let amino of sequence) {
-    const abc = Object.values(aminoInfo).find(e => e.oneCode === amino)
-    molarExt += abc.coefficient;
-    monoMass += abc.monoMass;
-    avgMass += abc.avgMass;
+  let peptide = {
+    amount: sequence.length,
+    avgMass: 0,
+    monoMass: 0,
+    molarExt: 0,
+    mgmlExt: 0
+  };
+  for (let c of sequence) {
+    const amino = Object.values(aminoInfo).find(e => e.oneCode === c)
+    peptide.avgMass += amino.avgMass;
+    peptide.monoMass += amino.monoMass;
+    peptide.molarExt += amino.coefficient;
+
+    let key = amino.threeCode.toLowerCase();
+    peptide[key] ? peptide[key]++ : peptide[key] = 1;
   }
   // Add the peptide bonds value.
-  molarExt += (sequence.length -1) * 923;
+  peptide.molarExt += (sequence.length -1) * 923;
 
   if (sequence[0] === 'P') {
     //N-Terminal Proline has much lower coefficient
-    molarExt += 30 - 2675;
+    peptide.molarExt += 30 - 2675;
   }
-  mgmlExt = molarExt / avgMass;
 
-  console.log(avgMass);
-  console.log(monoMass);
-  console.log(molarExt);
-  console.log(mgmlExt);
+  peptide.avgMass = peptide.avgMass.toFixed(3);
+  peptide.monoMass = peptide.monoMass.toFixed(3);
+  peptide.mgmlExt = (peptide.molarExt / peptide.avgMass).toFixed(3);
+
+  return peptide;
 };
+
+function displayResult(peptide = {}) {
+  let display = document.querySelector('.amino-display');
+  while (display.firstChild) {
+    display.removeChild(display.firstChild);
+  }
+
+  document.querySelector('#js-avgMass').textContent = peptide.avgMass || 0;
+  document.querySelector('#js-monoMass').textContent = peptide.monoMass || 0;
+  document.querySelector('#js-mol').textContent = peptide.molarExt || 0;
+  document.querySelector('#js-mgml').textContent = peptide.mgmlExt || 0;
+
+  Object.keys(aminoInfo).forEach(key => {
+    let amino = aminoInfo[key];
+    let div = document.createElement('div');
+    div.setAttribute('class', `${amino.threeCode} grid-wrapper grid-3-col`);
+
+    let name = document.createElement('p');
+    name.textContent = amino.name;
+    div.appendChild(name);
+
+    let amount = document.createElement('p');
+    amount.setAttribute('class', 'amino-amount');
+    amount.textContent = peptide[key] || 0;
+    div.appendChild(amount);
+
+    let mol = document.createElement('p');
+    mol.setAttribute('class', 'amino-mol');
+    mol.textContent = peptide[key] ? `${(peptide[key]/peptide.amount*100).toFixed(3)}%` : '-';
+    div.appendChild(mol);
+
+    display.appendChild(div);
+  });
+
+  document.querySelector('.amino-total').textContent = peptide.amount || 0;
+}
+
+displayResult();

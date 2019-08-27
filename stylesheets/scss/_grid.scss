@@ -1,8 +1,15 @@
 .grid-wrapper {
   display: grid;
-  grid-template-columns: auto auto;
 
   & > * {
     background-color: #B8B8B8;
   }
+}
+
+.grid-2-col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-3-col {
+  grid-template-columns: 1fr 1fr 1fr;
 }

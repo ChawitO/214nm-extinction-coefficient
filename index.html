@@ -14,7 +14,7 @@
         <!-- Instruction -->
     </header>
     <main>
-      <section class="grid-wrapper">
+      <section class="grid-wrapper grid-2-col">
         <!-- Uniprot -->
         <div class="">
           <h3>UniProt Accession Number:</h3>
@@ -28,29 +28,41 @@
           <h3>Peptide Sequence:</h3>
           <form>
             <textarea name="textarea" rows="8" cols="80"></textarea>
-            <input type="button" value="Click" onclick="test2(this.form)">
+            <input type="button" value="Click" onclick="main(this.form.textarea.value)">
           </form>
         </div>
       </section>
       <!-- Processed peptide -->
       <textarea readonly id="js-peptide-sequence" rows="8" cols="80"></textarea>
-      <section class="grid-wrapper">
+      <section class="grid-wrapper grid-2-col">
         <!-- Summarised Output -->
-        <div class="">
+        <div class="grid-wrapper grid-2-col">
           <p>Average Mass <span style="font-size: 0.7em;">(g/mol)</span>:</p>
+          <p id="js-avgMass"></p>
           <p>Monoisotopic Mass <span style="font-size: 0.7em;">(g/mol)</span>:</p>
+          <p id="js-monoMass"></p>
           <p>Molar Extinction Coefficient <span style="font-size: 0.7em;">(M<sup>-1</sup>cm<sup>-1</sup>)</span>:</p>
+          <p id="js-mol"></p>
           <p>0.1% Extinction Coefficient <span style="font-size: 0.7em;">((mg/ml)<sup>-1</sup>cm<sup>-1</sup>)</span>:</p>
+          <p id="js-mgml"></p>
         </div>
         <!-- Detailed output options -->
-        <div class="">
+        <div class="display-options">
 
         </div>
       </section>
       <!-- Detailed Amino Acid compositions -->
-      <section>
-
-      </section>
+      <div class="grid-wrapper grid-3-col">
+        <p>Amino Acid</p>
+        <p>Amount</p>
+        <p>Mol%</p>
+      </div>
+      <section class="amino-display"></section>
+      <div class="grid-wrapper grid-3-col">
+        <p>Total:</p>
+        <p class="amino-total"></p>
+        <p>-</p>
+      </div>
     </main>
     <footer>
       <!-- https://www.ncbi.nlm.nih.gov/pubmed/17539659 -->
