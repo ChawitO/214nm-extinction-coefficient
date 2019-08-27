@@ -49,9 +49,10 @@ function requestFastaFromUniprot(form) {
 };
 
 function calculate(sequence) {
-  let molarExt = 0;
-  let monoMass = 0;
   let avgMass = 0;
+  let monoMass = 0;
+  let molarExt = 0;
+  let mgmlExt = 0;
   for (let amino of sequence) {
     const abc = Object.values(aminoInfo).find(e => e.oneCode === amino)
     molarExt += abc.coefficient;
@@ -65,7 +66,10 @@ function calculate(sequence) {
     //N-Terminal Proline has much lower coefficient
     molarExt += 30 - 2675;
   }
-  console.log(molarExt);
-  console.log(monoMass);
+  mgmlExt = molarExt / avgMass;
+
   console.log(avgMass);
+  console.log(monoMass);
+  console.log(molarExt);
+  console.log(mgmlExt);
 };
