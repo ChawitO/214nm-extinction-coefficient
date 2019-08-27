@@ -35,6 +35,13 @@ const aminoInfo = {
   nle: new AminoAcid('Norleucine',    'Nle', 'X', 45,    113.08406, 113.1576)
 };
 
+const aminoGroup = {
+  acidic: ['asp', 'glu'],
+  basic: ['arg', 'his', 'lys'],
+  neutral: ['asn', 'cys', 'gln', 'ser', 'thr', 'trp', 'tyr'],
+  nonPolar: ['ala', 'gly', 'ile', 'leu', 'met', 'phe', 'pro', 'val', 'nle']
+};
+
 function requestFastaFromUniprot(form) {
   const code = form.inputbox.value.replace(/[^0-9a-z]/gi, '');
   const url = `https://www.uniprot.org/uniprot/${code}.fasta`;
@@ -49,9 +56,9 @@ function requestFastaFromUniprot(form) {
 
 function main(sequence) {
   document.querySelector('#js-peptide-sequence').value = sequence;
-  let peptide = calculate(sequence);
+  peptide = calculate(sequence);
 
-  displayResult(peptide);
+  displayResult();
 };
 
 function calculate(sequence) {
@@ -86,7 +93,14 @@ function calculate(sequence) {
   return peptide;
 };
 
-function displayResult(peptide = {}) {
+function displayResult() {
+  const groupName = {
+    acidic: 'Polar-Acidic',
+    basic: 'Polar-Basic',
+    neutral: 'Polar-Neutral',
+    nonPolar: 'Non-Polar'
+  };
+  let useGroup = document.querySelector('#radio-group').checked;
   let display = document.querySelector('.amino-display');
   while (display.firstChild) {
     display.removeChild(display.firstChild);
@@ -97,29 +111,57 @@ function displayResult(peptide = {}) {
   document.querySelector('#js-mol').textContent = peptide.molarExt || 0;
   document.querySelector('#js-mgml').textContent = peptide.mgmlExt || 0;
 
-  Object.keys(aminoInfo).forEach(key => {
-    let amino = aminoInfo[key];
-    let div = document.createElement('div');
-    div.setAttribute('class', `${amino.threeCode} grid-wrapper grid-3-col`);
+  if (useGroup) {
+    Object.keys(aminoGroup).forEach(key => {
+      let wrapper = document.createElement('div');
+      wrapper.setAttribute('class', `grid-wrapper grid-3-col`);
+      let name = document.createElement('p');
+      name.textContent = groupName[key];
+      wrapper.appendChild(name);
+      display.appendChild(wrapper);
 
-    let name = document.createElement('p');
-    name.textContent = amino.name;
-    div.appendChild(name);
+      aminoGroup[key].forEach(makeAminoItem);
+    });
+  }
+  else {
+    Object.keys(aminoInfo).forEach(makeAminoItem);
+  }
 
-    let amount = document.createElement('p');
-    amount.setAttribute('class', 'amino-amount');
-    amount.textContent = peptide[key] || 0;
-    div.appendChild(amount);
-
-    let mol = document.createElement('p');
-    mol.setAttribute('class', 'amino-mol');
-    mol.textContent = peptide[key] ? `${(peptide[key]/peptide.amount*100).toFixed(3)}%` : '-';
-    div.appendChild(mol);
-
-    display.appendChild(div);
-  });
-
-  document.querySelector('.amino-total').textContent = peptide.amount || 0;
+  document.querySelector('#js-aminoTotal').textContent = peptide.amount || 0;
 }
+
+function makeAminoItem(key) {
+  let shouldHide = document.querySelector('#radio-hide').checked;
+  let display = document.querySelector('.amino-display');
+  // Skip if hiding absent amino acid
+  if (shouldHide && !peptide[key]) {
+    return;
+  }
+  let amino = aminoInfo[key];
+  let wrapper = document.createElement('div');
+  wrapper.setAttribute('class', `grid-wrapper grid-3-col`);
+
+  let name = document.createElement('p');
+  name.textContent = amino.name;
+  wrapper.appendChild(name);
+
+  let amount = document.createElement('p');
+  amount.setAttribute('class', 'amino-amount');
+  amount.textContent = peptide[key] || 0;
+  wrapper.appendChild(amount);
+
+  let mol = document.createElement('p');
+  mol.setAttribute('class', 'amino-mol');
+  mol.textContent = peptide[key] ? `${(peptide[key]/peptide.amount*100).toFixed(3)}%` : '-';
+  wrapper.appendChild(mol);
+
+  display.appendChild(wrapper);
+};
+
+var peptide = {};
+document.querySelector('#radio-show').onclick = displayResult;
+document.querySelector('#radio-hide').onclick = displayResult;
+document.querySelector('#radio-alpha').onclick = displayResult;
+document.querySelector('#radio-group').onclick = displayResult;
 
 displayResult();

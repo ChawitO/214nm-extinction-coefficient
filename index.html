@@ -48,7 +48,20 @@
         </div>
         <!-- Detailed output options -->
         <div class="display-options">
-
+          <form>
+            <p>Show or Hide absent amino acids:</p>
+            <input id="radio-show" type="radio" name="result-filter" value="" checked>
+            <label for="radio-show">Show</label>
+            <input id="radio-hide" type="radio" name="result-filter" value="">
+            <label for="radio-hide">Hide</label>
+          </form>
+          <form>
+            <p>Sort alphabetically or in related groups:</p>
+            <input id="radio-alpha" type="radio" name="result-sorting" value="" checked>
+            <label for="radio-alpha">Alphabetical</label>
+            <input id="radio-group" type="radio" name="result-sorting" value="">
+            <label for="radio-group">Related Groups</label>
+          </form>
         </div>
       </section>
       <!-- Detailed Amino Acid compositions -->
@@ -60,7 +73,7 @@
       <section class="amino-display"></section>
       <div class="grid-wrapper grid-3-col">
         <p>Total:</p>
-        <p class="amino-total"></p>
+        <p id="js-aminoTotal"></p>
         <p>-</p>
       </div>
     </main>
