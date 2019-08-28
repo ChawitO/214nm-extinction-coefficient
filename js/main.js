@@ -55,10 +55,19 @@ function requestFastaFromUniprot(form) {
 };
 
 function main(sequence) {
+  sequence = sequence.replace(/[^a-z]/gi, '');
+  sequence = convertThreeToOneCode(sequence);
   document.querySelector('#js-peptide-sequence').value = sequence;
   peptide = calculate(sequence);
 
   displayResult();
+};
+
+function convertThreeToOneCode(sequence) {
+  Object.keys(aminoInfo).forEach(key => {
+    sequence = sequence.replace(new RegExp(`${aminoInfo[key].threeCode}`, 'g'), aminoInfo[key].oneCode);
+  });
+  return sequence;
 };
 
 function calculate(sequence) {
