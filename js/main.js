@@ -42,14 +42,25 @@ const aminoGroup = {
   nonPolar: ['ala', 'gly', 'ile', 'leu', 'met', 'phe', 'pro', 'val', 'nle']
 }
 
-function requestFastaFromUniprot(form) {
-  const code = form.inputbox.value.replace(/[^0-9a-z]/gi, '')
+document.querySelector('#js-uniprotRequest').onclick = requestFastaFromUniprot
+document.querySelector('#radio-show').onclick = displayResult
+document.querySelector('#radio-hide').onclick = displayResult
+document.querySelector('#radio-alpha').onclick = displayResult
+document.querySelector('#radio-group').onclick = displayResult
+
+displayResult()
+
+/*
+Functions
+*/
+function requestFastaFromUniprot() {
+  const code = this.form.inputbox.value.replace(/[^0-9a-z]/gi, '')
   const url = `https://www.uniprot.org/uniprot/${code}.fasta`
 
   fetch(url)
     .then(response => response.text())
     .then(txt => {
-      txt = txt.replace(/^>.*/, '').replace(/[^a-z]/gi, '')
+      txt = txt.replace(/^>.*/, '')
       main(txt)
     })
 }
@@ -58,9 +69,9 @@ function main(sequence) {
   sequence = sequence.replace(/[^a-z]/gi, '')
   sequence = convertThreeToOneCode(sequence)
   document.querySelector('#js-peptide-sequence').value = sequence
-  peptide = calculate(sequence)
+  const peptide = calculate(sequence)
 
-  displayResult()
+  displayResult(peptide)
 }
 
 function convertThreeToOneCode(sequence) {
@@ -90,10 +101,8 @@ function calculate(sequence) {
   // Add the peptide bonds value.
   peptide.molarExt += (sequence.length - 1) * 923
 
-  if (sequence[0] === 'P') {
-    //N-Terminal Proline has much lower coefficient
-    peptide.molarExt += 30 - 2675
-  }
+  // N-Terminal Proline has much lower coefficient
+  if (sequence[0] === 'P') peptide.molarExt += 30 - 2675
 
   peptide.avgMass = peptide.avgMass.toFixed(3)
   peptide.monoMass = peptide.monoMass.toFixed(3)
@@ -102,7 +111,7 @@ function calculate(sequence) {
   return peptide
 }
 
-function displayResult() {
+function displayResult(peptide = {}) {
   const groupName = {
     acidic: 'Polar-Acidic',
     basic: 'Polar-Basic',
@@ -129,10 +138,10 @@ function displayResult() {
       wrapper.appendChild(name)
       display.appendChild(wrapper)
 
-      aminoGroup[key].forEach(makeAminoItem)
+      aminoGroup[key].forEach(makeAminoItem, peptide)
     })
   } else {
-    Object.keys(aminoInfo).forEach(makeAminoItem)
+    Object.keys(aminoInfo).forEach(makeAminoItem, peptide)
   }
 
   document.querySelector('#js-aminoTotal').textContent = peptide.amount || 0
@@ -142,7 +151,7 @@ function makeAminoItem(key) {
   const shouldHide = document.querySelector('#radio-hide').checked
   const display = document.querySelector('.amino-display')
   // Skip if hiding absent amino acid
-  if (shouldHide && !peptide[key]) {
+  if (shouldHide && !this[key]) {
     return
   }
   const amino = aminoInfo[key]
@@ -155,21 +164,13 @@ function makeAminoItem(key) {
 
   const amount = document.createElement('p')
   amount.setAttribute('class', 'amino-amount')
-  amount.textContent = peptide[key] || 0
+  amount.textContent = this[key] || 0
   wrapper.appendChild(amount)
 
   const mol = document.createElement('p')
   mol.setAttribute('class', 'amino-mol')
-  mol.textContent = peptide[key] ? `${(peptide[key] / peptide.amount * 100).toFixed(3)}%` : '-'
+  mol.textContent = this[key] ? `${(this[key] / this.amount * 100).toFixed(3)}%` : '-'
   wrapper.appendChild(mol)
 
   display.appendChild(wrapper)
 }
-
-var peptide = {}
-document.querySelector('#radio-show').onclick = displayResult
-document.querySelector('#radio-hide').onclick = displayResult
-document.querySelector('#radio-alpha').onclick = displayResult
-document.querySelector('#radio-group').onclick = displayResult
-
-displayResult()
